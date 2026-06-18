@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "opencode Chrome Control",
+  "description": "Lets opencode inspect and control Chrome tabs through a local Native Messaging host.",
+  "version": "0.1.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvPy56gDjNH3exA05WVf885sjJFkkj8lW4ve8cRlWF0/4AUvu9wEjxkiFVrhbnNyy5o/nVHaspntsHX85EWvMTKhaeS3LaM3qgecCf58liKkhmdfLH5zubtGpXawGob30dxZrSZZWK98WKCNNtop/2fiWyp0dvyFfQiY7IFsEPz5GHJaSf3zBFJ0NdUujNs2seXC79fTD9obZLvaAOFEcWohM4DCt+j+vnsI/ddKwNVAbD3sOoRxlNweJ33I+My0h7Y8Pe+ldWbF6HuUiPjm6eipFpN7qDWlkeNJx370j/+c39v8CcxtM1PXpaBdaacZ+9uCWCiYGNGDzyCwBv1uKmwIDAQAB",
+  "permissions": ["nativeMessaging", "tabs", "activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_title": "opencode Chrome Control"
+  }
+}

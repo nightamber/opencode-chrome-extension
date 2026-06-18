@@ -1,0 +1,30 @@
+{
+  "name": "opencode-chrome-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.3.14",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "bun run build:shared && bun run build:host && bun run build:extension && bun run build:plugin",
+    "build:extension": "bun run --cwd packages/extension build",
+    "build:host": "bun run --cwd packages/native-host build",
+    "build:plugin": "bun run --cwd packages/opencode-plugin build",
+    "build:shared": "bun run --cwd packages/shared build",
+    "install-host": "bun scripts/install-native-host.ts",
+    "install-host:dry-run": "bun scripts/install-native-host.ts --dry-run",
+    "test": "bun test packages/shared/src packages/native-host/src packages/opencode-plugin/src packages/extension/src",
+    "typecheck": "tsc -b"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.2",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.17.7",
+    "zod": "^4.1.8"
+  }
+}
