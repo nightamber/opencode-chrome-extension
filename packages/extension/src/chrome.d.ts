@@ -1,7 +1,16 @@
 declare const chrome: {
+  action: {
+    setBadgeBackgroundColor(options: { color: string }): Promise<void>
+    setBadgeText(options: { text: string }): Promise<void>
+    setIcon(options: { imageData?: Record<string, ImageData>; path?: Record<string, string> }): Promise<void>
+    setTitle(options: { title: string }): Promise<void>
+  }
   runtime: {
     connectNative(name: string): ChromePort
+    getManifest(): { name: string; version: string }
+    id: string
     onMessage: ChromeEvent<(message: unknown, sender: { tab?: ChromeTab }, sendResponse: (response?: unknown) => void) => boolean | void>
+    sendMessage(message: unknown): Promise<unknown>
   }
   tabs: {
     captureVisibleTab(windowId?: number, options?: { format?: "png" | "jpeg"; quality?: number }): Promise<string>

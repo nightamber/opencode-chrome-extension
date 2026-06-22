@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>opencode Chrome Control</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup">
+      <img class="brand-wordmark" src="opencode-wordmark.png" alt="opencode" />
+
+      <section class="panel">
+        <div class="row">
+          <div id="statusPill" class="pill pending">
+            <span class="dot"></span>
+            <span id="statusText">Checking</span>
+          </div>
+          <button id="settingsButton" class="icon-button" type="button" title="Extension settings" aria-label="Extension settings">
+            <span aria-hidden="true">⚙</span>
+          </button>
+        </div>
+
+        <p class="message">
+          Control Chrome with opencode.
+          <a href="https://opencode.ai/docs/zh-cn/plugins/" target="_blank" rel="noreferrer">Learn more</a>
+        </p>
+
+        <p id="statusDetail" class="status-detail">Checking Chrome native host connection.</p>
+        <p id="versionText" class="version">Version -</p>
+      </section>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

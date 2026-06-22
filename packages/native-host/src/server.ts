@@ -57,6 +57,15 @@ export async function forwardToExtension(state: BridgeState, request: BrowserReq
   })
 }
 
+function notifyExtensionActivity(state: BridgeState, method: string, durationMs = 2000) {
+  if (!state.transport || !state.connected) return
+  state.transport.send({
+    id: `activity-${randomUUID()}`,
+    method: "activity",
+    params: { durationMs, method },
+  })
+}
+
 export function createRuntimeToken() {
   return randomUUID().replaceAll("-", "") + randomUUID().replaceAll("-", "")
 }
@@ -103,6 +112,7 @@ export function createHttpHandler(state: BridgeState, token: string) {
     }
 
     try {
+      notifyExtensionActivity(state, parsed.data.method)
       const response = await forwardToExtension(state, parsed.data)
       return Response.json(response)
     } catch (error) {

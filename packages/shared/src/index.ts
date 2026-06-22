@@ -45,13 +45,36 @@ export const ConsoleLogSchema = z.object({
 const EmptySchema = z.object({}).optional()
 
 export const BrowserMethodSchemas = {
+  activity: z.object({
+    durationMs: z.number().int().min(500).max(10000).default(2000),
+    method: z.string().optional(),
+  }),
   status: EmptySchema,
   tabsList: EmptySchema,
   tabSelect: z.object({ tabId: z.number().int().positive() }),
   tabNew: z.object({ url: z.string().url().optional() }),
   tabGoto: z.object({ tabId: z.number().int().positive().optional(), url: z.string().url() }),
   tabScreenshot: z.object({ tabId: z.number().int().positive().optional() }),
+  waitForLoad: z.object({
+    tabId: z.number().int().positive().optional(),
+    timeoutMs: z.number().int().min(100).max(60000).default(10000),
+    quietMs: z.number().int().min(100).max(5000).default(800),
+  }),
   domSnapshot: z.object({ tabId: z.number().int().positive().optional() }),
+  pageContent: z.object({
+    tabId: z.number().int().positive().optional(),
+    timeoutMs: z.number().int().min(100).max(60000).default(10000),
+    quietMs: z.number().int().min(100).max(5000).default(800),
+    maxChars: z.number().int().min(1000).max(100000).default(30000),
+    includeImages: z.boolean().default(true),
+    maxImages: z.number().int().min(0).max(100).default(20),
+  }),
+  pageAssets: z.object({
+    tabId: z.number().int().positive().optional(),
+    timeoutMs: z.number().int().min(100).max(60000).default(10000),
+    quietMs: z.number().int().min(100).max(5000).default(800),
+    maxAssets: z.number().int().min(10).max(1000).default(300),
+  }),
   click: z.object({ tabId: z.number().int().positive().optional(), x: z.number(), y: z.number() }),
   type: z.object({ tabId: z.number().int().positive().optional(), text: z.string().min(1) }),
   keypress: z.object({ tabId: z.number().int().positive().optional(), key: z.string().min(1) }),
@@ -59,6 +82,7 @@ export const BrowserMethodSchemas = {
     tabId: z.number().int().positive().optional(),
     deltaX: z.number().default(0),
     deltaY: z.number().default(0),
+    durationMs: z.number().int().min(0).max(3000).default(450),
     x: z.number().optional(),
     y: z.number().optional(),
   }),

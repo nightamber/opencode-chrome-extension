@@ -1,0 +1,131 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  width: 360px;
+  min-width: 360px;
+  background: #1f1f1f;
+  color: #d8d8dc;
+}
+
+.popup {
+  box-sizing: border-box;
+  min-height: 0;
+  padding: 22px 24px 33px;
+}
+
+.brand-wordmark {
+  display: block;
+  width: 117px;
+  height: 21px;
+  margin: 8px auto 37px;
+  object-fit: contain;
+}
+
+.panel {
+  box-sizing: border-box;
+  min-height: 0;
+  padding: 11px 12px 13px;
+  border: 1px solid #262626;
+  border-radius: 14px;
+  background: #171717;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pill {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 11px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.pill.connected {
+  background: #063f23;
+  color: #20df69;
+}
+
+.pill.disconnected {
+  background: #451b1b;
+  color: #ff6b6b;
+}
+
+.pill.busy {
+  background: #5a1717;
+  color: #ff9c9c;
+}
+
+.pill.pending {
+  background: #333333;
+  color: #d4d4d8;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.icon-button {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #c7c7cc;
+  cursor: pointer;
+  font-size: 19px;
+  line-height: 1;
+}
+
+.icon-button:hover {
+  background: #262626;
+}
+
+.message {
+  margin: 18px 0 0;
+  color: #bfc0c7;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.32;
+}
+
+.message a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.status-detail {
+  display: none;
+  min-height: 0;
+  margin: 0;
+  color: #8e8e93;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.version {
+  margin: 13px 0 0;
+  color: #bfc0c7;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.25;
+}

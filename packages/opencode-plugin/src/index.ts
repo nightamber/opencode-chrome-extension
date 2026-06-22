@@ -8,7 +8,7 @@ import {
   type BrowserResponse,
   type RuntimeConfig,
 } from "@opencode-chrome-extension/shared"
-import { mkdir, writeFile } from "node:fs/promises"
+import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { randomUUID } from "node:crypto"
 import { tmpdir } from "node:os"
 import path from "node:path"
@@ -74,7 +74,7 @@ const ChromePlugin: Plugin = async (_input, options?: PluginOptions) => {
       }),
 
       chrome_tab_screenshot: tool({
-        description: "Capture a screenshot of the selected or specified Chrome tab.",
+        description: "Wait for the page to become stable, then capture a screenshot of the selected or specified Chrome tab.",
         args: {
           tabId: tool.schema.number().int().positive().optional().describe("Chrome tab id. Defaults to selected or active tab."),
         },
@@ -92,6 +92,48 @@ const ChromePlugin: Plugin = async (_input, options?: PluginOptions) => {
         },
         async execute(args) {
           return await client.command("domSnapshot", args)
+        },
+      }),
+
+      chrome_wait_for_load: tool({
+        description: "Wait until a Chrome tab finishes loading and its visible page content is briefly stable.",
+        args: {
+          tabId: tool.schema.number().int().positive().optional().describe("Chrome tab id. Defaults to selected or active tab."),
+          timeoutMs: tool.schema.number().int().min(100).max(60000).default(10000).describe("Maximum time to wait."),
+          quietMs: tool.schema.number().int().min(100).max(5000).default(800).describe("How long content must stay unchanged."),
+        },
+        async execute(args) {
+          return await client.command("waitForLoad", args)
+        },
+      }),
+
+      chrome_page_content: tool({
+        description:
+          "Read the current Chrome tab's rendered page content as text, including SPA-rendered docs pages. Use this before webfetch when the user asks to summarize or inspect a page in Chrome.",
+        args: {
+          tabId: tool.schema.number().int().positive().optional().describe("Chrome tab id. Defaults to selected or active tab."),
+          timeoutMs: tool.schema.number().int().min(100).max(60000).default(10000).describe("Maximum time to wait for page content."),
+          quietMs: tool.schema.number().int().min(100).max(5000).default(800).describe("How long content must stay unchanged."),
+          maxChars: tool.schema.number().int().min(1000).max(100000).default(30000).describe("Maximum text characters to return."),
+          includeImages: tool.schema.boolean().default(true).describe("Include image summaries with the page text."),
+          maxImages: tool.schema.number().int().min(0).max(100).default(20).describe("Maximum image summaries to include."),
+        },
+        async execute(args) {
+          return await client.command("pageContent", args)
+        },
+      }),
+
+      chrome_page_assets: tool({
+        description:
+          "Inventory image assets from the current rendered Chrome page, including img/picture sources, CSS background images, loaded image resources, and inline SVGs.",
+        args: {
+          tabId: tool.schema.number().int().positive().optional().describe("Chrome tab id. Defaults to selected or active tab."),
+          timeoutMs: tool.schema.number().int().min(100).max(60000).default(10000).describe("Maximum time to wait for page assets."),
+          quietMs: tool.schema.number().int().min(100).max(5000).default(800).describe("How long page content must stay unchanged."),
+          maxAssets: tool.schema.number().int().min(10).max(1000).default(300).describe("Maximum number of asset entries to return."),
+        },
+        async execute(args) {
+          return await client.command("pageAssets", args)
         },
       }),
 
@@ -138,6 +180,7 @@ const ChromePlugin: Plugin = async (_input, options?: PluginOptions) => {
           tabId: tool.schema.number().int().positive().optional().describe("Chrome tab id. Defaults to selected or active tab."),
           deltaX: tool.schema.number().default(0).describe("Horizontal scroll delta."),
           deltaY: tool.schema.number().default(0).describe("Vertical scroll delta."),
+          durationMs: tool.schema.number().int().min(0).max(3000).default(450).describe("Smooth scroll duration in milliseconds. Use 0 for instant scrolling."),
           x: tool.schema.number().optional().describe("Optional viewport x coordinate used to find a scrollable element."),
           y: tool.schema.number().optional().describe("Optional viewport y coordinate used to find a scrollable element."),
         },
@@ -213,7 +256,7 @@ class ChromeClient {
 
   private async config() {
     const file = this.configPath ?? runtimeConfigPath()
-    return RuntimeConfigSchema.parse(await Bun.file(file).json())
+    return RuntimeConfigSchema.parse(JSON.parse(await readFile(file, "utf8")))
   }
 
   private headers(config: RuntimeConfig) {
