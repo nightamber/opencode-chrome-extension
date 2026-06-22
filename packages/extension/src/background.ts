@@ -302,7 +302,7 @@ async function renderActionState() {
     chrome.action.setBadgeText({ text: busy ? "RUN" : "" }),
     chrome.action.setBadgeBackgroundColor({ color: busy ? "#dc2626" : "#6b7280" }),
     chrome.action.setIcon({ path: actionIconPath(busy) }),
-    chrome.action.setTitle({ title: busy ? "opencode is using Chrome" : "opencode Chrome Control" }),
+    chrome.action.setTitle({ title: busy ? "OpenCode is using Chrome" : "OpenCode" }),
   ]
   await Promise.all(tasks.map((task) => task.catch(() => undefined)))
 }

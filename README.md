@@ -1,19 +1,19 @@
-# opencode Chrome Control
+# OpenCode Chrome Control
 
-这是一个给 [opencode](https://opencode.ai/) 使用的 Chrome 控制插件。它可以让 opencode 通过本机 Chrome 扩展和 Native Messaging host 读取、截图、点击、输入和操作你当前的 Chrome 标签页。
+这是一个给 [OpenCode](https://opencode.ai/) 使用的 Chrome 控制插件。它可以让 OpenCode 通过本机 Chrome 扩展和 Native Messaging host 读取、截图、点击、输入和操作你当前的 Chrome 标签页。
 
 本仓库包含三部分：
 
 - Chrome MV3 扩展
 - Chrome Native Messaging 本机宿主
-- 暴露 Chrome 工具的 opencode 插件
+- 暴露 Chrome 工具的 OpenCode 插件
 
 ## 环境要求
 
 - macOS
 - Google Chrome
 - [Bun](https://bun.sh/)
-- 支持插件配置的 opencode
+- 支持插件配置的 OpenCode
 
 目前 Native Messaging host 的安装脚本只支持 macOS。
 
@@ -73,9 +73,9 @@ bun run install-host:dry-run
 printf '%s\n' "$PWD/packages/extension/dist/extension"
 ```
 
-## 配置 opencode
+## 配置 OpenCode
 
-把构建后的 opencode 插件文件加入 opencode 配置。
+把构建后的 OpenCode 插件文件加入 OpenCode 配置。
 
 常见配置文件位置：
 
@@ -107,8 +107,8 @@ printf '%s\n' "$PWD/packages/opencode-plugin/dist/index.js"
 1. 执行 `bun run build`。
 2. 执行 `bun run install-host`。
 3. 在 `chrome://extensions` 中重新加载这个 unpacked extension。
-4. 重启或重新加载 opencode，让它读取新的插件配置。
-5. 在 opencode 中运行 `chrome_status`。
+4. 重启或重新加载 OpenCode，让它读取新的插件配置。
+5. 在 OpenCode 中运行 `chrome_status`。
 
 连接正常时，`chrome_status` 会返回 native host 和 Chrome 扩展的连接状态。
 
@@ -118,7 +118,7 @@ Native host 会把运行时连接信息写到：
 ~/.opencode-chrome-extension/runtime.json
 ```
 
-opencode 插件会读取这个文件里的本地端口和 token，然后连接 native host。
+OpenCode 插件会读取这个文件里的本地端口和 token，然后连接 native host。
 
 ## 工具列表
 
@@ -155,11 +155,11 @@ opencode 插件会读取这个文件里的本地端口和 token，然后连接 n
 - 在 `chrome://extensions` 中重新加载扩展。
 - 确认 Native Messaging manifest 已经写入上面说明的位置。
 
-如果 opencode 无法加载插件：
+如果 OpenCode 无法加载插件：
 
 - 确认 `bun run build` 已经成功执行。
 - 确认配置里使用的是 `packages/opencode-plugin/dist/index.js` 的绝对路径。
-- 修改配置后，重启或重新加载 opencode。
+- 修改配置后，重启或重新加载 OpenCode。
 
 ## 开发
 
@@ -175,7 +175,7 @@ bun test
 bun run typecheck
 ```
 
-修改扩展、native host 或 opencode 插件代码后，重新执行：
+修改扩展、native host 或 OpenCode 插件代码后，重新执行：
 
 ```sh
 bun run build
@@ -186,6 +186,6 @@ bun run install-host
 
 ## 安全说明
 
-这个项目会让 opencode 通过本地插件控制你的 Chrome。只应该在你信任当前 opencode 会话和本地仓库代码的环境中启用。
+这个项目会让 OpenCode 通过本地插件控制你的 Chrome。只应该在你信任当前 OpenCode 会话和本地仓库代码的环境中启用。
 
-Native Messaging host 只监听 `127.0.0.1`，并把运行时 token 写入 `~/.opencode-chrome-extension/runtime.json`。opencode 插件会用这个 token 调用本机 host。
+Native Messaging host 只监听 `127.0.0.1`，并把运行时 token 写入 `~/.opencode-chrome-extension/runtime.json`。OpenCode 插件会用这个 token 调用本机 host。

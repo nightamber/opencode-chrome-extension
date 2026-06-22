@@ -27,7 +27,7 @@ const manifestPath = path.join(
 )
 const manifest = {
   name: NativeHostName,
-  description: "opencode Chrome Native Messaging host",
+  description: "OpenCode Chrome Native Messaging host",
   path: launcher,
   type: "stdio",
   allowed_origins: [`chrome-extension://${readExtensionId()}/`],

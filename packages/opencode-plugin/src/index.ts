@@ -24,7 +24,7 @@ const ChromePlugin: Plugin = async (_input, options?: PluginOptions) => {
   return {
     tool: {
       chrome_status: tool({
-        description: "Check whether the opencode Chrome native host and extension are connected.",
+        description: "Check whether the OpenCode Chrome native host and extension are connected.",
         args: {},
         async execute() {
           return await client.status()
@@ -204,7 +204,7 @@ const ChromePlugin: Plugin = async (_input, options?: PluginOptions) => {
       }),
 
       chrome_console_logs: tool({
-        description: "Read console logs captured by the opencode Chrome content script.",
+        description: "Read console logs captured by the OpenCode Chrome content script.",
         args: {
           tabId: tool.schema.number().int().positive().optional().describe("Chrome tab id. Defaults to selected or active tab."),
           limit: tool.schema.number().int().min(1).max(200).default(50).describe("Maximum number of logs to return."),

@@ -49,7 +49,7 @@ function setPending() {
 }
 
 function statusMessage(status: PopupStatus) {
-  if (status.busy) return "opencode is currently using Chrome."
+  if (status.busy) return "OpenCode is currently using Chrome."
   if (status.connected) return "Chrome native host is connected and ready."
   return "Chrome native host is not connected. Reinstall the native host or reload this extension."
 }
