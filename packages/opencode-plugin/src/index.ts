@@ -81,7 +81,7 @@ const ChromePlugin: Plugin = async (_input, options?: PluginOptions) => {
         async execute(args) {
           const response = await client.commandObject("tabScreenshot", args)
           if (typeof response.dataUrl !== "string") return jsonResult(response)
-          return await screenshotResult(response.dataUrl, response.title, response.url)
+          return await screenshotResult(response.dataUrl, response.title, response.url, response.waitWarning)
         },
       }),
 
@@ -276,7 +276,7 @@ async function askChrome(context: ToolContext, action: string, patterns: string[
   })
 }
 
-async function screenshotResult(dataUrl: string, title: unknown, url: unknown): Promise<ToolResult> {
+async function screenshotResult(dataUrl: string, title: unknown, url: unknown, waitWarning?: unknown): Promise<ToolResult> {
   const match = /^data:image\/png;base64,(.+)$/.exec(dataUrl)
   if (!match) return jsonResult({ dataUrl, title, url })
 
@@ -287,7 +287,7 @@ async function screenshotResult(dataUrl: string, title: unknown, url: unknown): 
 
   return {
     title: typeof title === "string" ? title : "Chrome screenshot",
-    output: JSON.stringify({ path: file, title, url }, null, 2),
+    output: JSON.stringify({ path: file, title, url, waitWarning }, null, 2),
     attachments: [
       {
         type: "file",

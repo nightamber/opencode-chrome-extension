@@ -124,10 +124,10 @@ async function execute(request: BrowserRequest) {
     case "tabScreenshot": {
       const params = parseBrowserParams(request.method, request.params)
       const tabId = await targetTabId(params.tabId)
-      await sendContentMessage(tabId, { type: "waitForLoad", timeoutMs: 10000, quietMs: 800 })
+      const waitWarning = await waitForPageBeforeScreenshot(tabId)
       const tab = await chrome.tabs.get(tabId)
       const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" })
-      return { dataUrl, title: tab.title, url: tab.url }
+      return { dataUrl, title: tab.title, url: tab.url, waitWarning }
     }
     case "waitForLoad": {
       const params = parseBrowserParams(request.method, request.params)
@@ -139,27 +139,45 @@ async function execute(request: BrowserRequest) {
     }
     case "domSnapshot": {
       const params = parseBrowserParams(request.method, request.params)
-      return await sendContentMessage(await targetTabId(params.tabId), { type: "domSnapshot" })
+      const tabId = await targetTabId(params.tabId)
+      try {
+        return await sendContentMessage(tabId, { type: "domSnapshot" })
+      } catch (error) {
+        if (isRestrictedScriptingError(error)) return await protectedDomSnapshot(tabId, error)
+        throw error
+      }
     }
     case "pageContent": {
       const params = parseBrowserParams(request.method, request.params)
-      return await sendContentMessage(await targetTabId(params.tabId), {
-        type: "pageContent",
-        timeoutMs: params.timeoutMs,
-        quietMs: params.quietMs,
-        maxChars: params.maxChars,
-        includeImages: params.includeImages,
-        maxImages: params.maxImages,
-      })
+      const tabId = await targetTabId(params.tabId)
+      try {
+        return await sendContentMessage(tabId, {
+          type: "pageContent",
+          timeoutMs: params.timeoutMs,
+          quietMs: params.quietMs,
+          maxChars: params.maxChars,
+          includeImages: params.includeImages,
+          maxImages: params.maxImages,
+        })
+      } catch (error) {
+        if (isRestrictedScriptingError(error)) return await protectedPageContent(tabId, error)
+        throw error
+      }
     }
     case "pageAssets": {
       const params = parseBrowserParams(request.method, request.params)
-      return await sendContentMessage(await targetTabId(params.tabId), {
-        type: "pageAssets",
-        timeoutMs: params.timeoutMs,
-        quietMs: params.quietMs,
-        maxAssets: params.maxAssets,
-      })
+      const tabId = await targetTabId(params.tabId)
+      try {
+        return await sendContentMessage(tabId, {
+          type: "pageAssets",
+          timeoutMs: params.timeoutMs,
+          quietMs: params.quietMs,
+          maxAssets: params.maxAssets,
+        })
+      } catch (error) {
+        if (isRestrictedScriptingError(error)) return await protectedPageAssets(tabId, error)
+        throw error
+      }
     }
     case "click": {
       const params = parseBrowserParams(request.method, request.params)
@@ -207,9 +225,17 @@ async function targetTabId(tabId?: number) {
 async function sendContentMessage(tabId: number, message: unknown) {
   try {
     return contentResult(await chrome.tabs.sendMessage(tabId, message))
-  } catch {
-    await chrome.scripting.executeScript({ target: { tabId }, files: ["content.js"] })
-    return contentResult(await chrome.tabs.sendMessage(tabId, message))
+  } catch (firstError) {
+    try {
+      await chrome.scripting.executeScript({ target: { tabId }, files: ["content.js"] })
+    } catch (injectError) {
+      throw normalizeContentError(injectError, firstError)
+    }
+    try {
+      return contentResult(await chrome.tabs.sendMessage(tabId, message))
+    } catch (secondError) {
+      throw normalizeContentError(secondError, firstError)
+    }
   }
 }
 
@@ -218,6 +244,91 @@ function contentResult(response: unknown) {
     throw new Error(response.error)
   }
   return response
+}
+
+async function waitForPageBeforeScreenshot(tabId: number) {
+  try {
+    await sendContentMessage(tabId, { type: "waitForLoad", timeoutMs: 10000, quietMs: 800 })
+    return undefined
+  } catch (error) {
+    if (isRestrictedScriptingError(error)) {
+      return `Skipped page-stability wait because this Chrome page blocks extension scripting: ${errorMessage(error)}`
+    }
+    return `Skipped page-stability wait before screenshot: ${errorMessage(error)}`
+  }
+}
+
+async function protectedPageContent(tabId: number, error: unknown) {
+  const tab = await chrome.tabs.get(tabId)
+  return {
+    title: tab.title,
+    url: tab.url,
+    readyState: "restricted",
+    source: "tab",
+    text: protectedPageText(tab, error),
+    truncated: false,
+    textLength: protectedPageText(tab, error).length,
+    headings: tab.title ? [tab.title] : [],
+    images: [],
+    links: tab.url ? [{ text: tab.title ?? tab.url, href: tab.url }] : [],
+    restricted: true,
+    restriction: errorMessage(error),
+  }
+}
+
+async function protectedDomSnapshot(tabId: number, error: unknown) {
+  const tab = await chrome.tabs.get(tabId)
+  return {
+    nodes: [],
+    title: tab.title,
+    url: tab.url,
+    restricted: true,
+    restriction: errorMessage(error),
+  }
+}
+
+async function protectedPageAssets(tabId: number, error: unknown) {
+  const tab = await chrome.tabs.get(tabId)
+  return {
+    assets: [],
+    inlineSvgs: [],
+    pageUrl: tab.url,
+    title: tab.title,
+    restricted: true,
+    restriction: errorMessage(error),
+    summary: {
+      imageCount: 0,
+      inlineSvgCount: 0,
+      totalCount: 0,
+      visibleImageCount: 0,
+    },
+  }
+}
+
+function protectedPageText(tab: ChromeTab, error: unknown) {
+  return [
+    "This page blocks Chrome extension scripting, so OpenCode cannot read its DOM directly.",
+    `Title: ${tab.title ?? ""}`,
+    `URL: ${tab.url ?? ""}`,
+    `Restriction: ${errorMessage(error)}`,
+  ].join("\n")
+}
+
+function normalizeContentError(error: unknown, fallback?: unknown) {
+  if (error instanceof Error) return error
+  if (typeof error === "string") return new Error(error)
+  if (fallback instanceof Error) return fallback
+  return new Error(String(error ?? fallback ?? "Chrome content script failed"))
+}
+
+function isRestrictedScriptingError(error: unknown) {
+  return /extensions gallery cannot be scripted|cannot access contents of url|cannot access a chrome:\/\/|chrome web store|scheme is not supported/i.test(
+    errorMessage(error),
+  )
+}
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error)
 }
 
 function tabInfo(tab: ChromeTab): TabInfo[] {
